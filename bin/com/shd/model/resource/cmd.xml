@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+                                   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<sql-query name="user.save.saveNewBcTable">
+		insert into
+	        BC_USER_TABLE
+	        (
+	        	UserID,
+	        	IsNewEmployee,
+	           	Status,
+	           	CreatedTime,
+	           	EditedTime
+	        ) 
+	    values
+	        (:UserID,:IsNewEmployee,:Status,:CreatedTime,:EditedTime)
+	</sql-query>
+	
+	
+	
+	
+	
+	<sql-query name="news.query.getEmpUserIdList">
+		<![CDATA[ 
+			select EmpNo,Birthday  from [eaidb].[dbo].[EI_TB_HREMP] WHERE jobstatus in (1,2) 
+		]]>
+	</sql-query>
+	
+	<sql-query name="news.query.getBulletinBoardAdminPagination">
+		<![CDATA[ 
+			select a.*,b.NAME NEWS_TYPE_NAME,h.empCname from 
+			[exdb].[dbo].[EX_TB_NEWS_MODEL_M] a
+			left join [exdb].[dbo].[EX_TB_NEWSTYPE_M] b on a.NEWS_TYPE = b.NEWSTYPE_ID
+			left join [eaidb].[dbo].[EI_TB_HREMP] h on h.EmpNo = a.CREATED_ID
+			left join [exdb].[dbo].[EX_TB_NEWSCATEGORY_M] c on b.NEWSTYPE_PARENT_ID = c.NEWSCATEGORY_ID
+			where 1=1 
+			and a.DELETE_FLAG <> '1'
+			and c.NEWSCATEGORY_ID = 2
+            and (a.NEWS_TYPE = COALESCE(NULL, :newsType ) or (:newsType  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE >= COALESCE(NULL, :startDate ) or (:startDate  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE <= COALESCE(NULL, :endDate ) or (:endDate  IS NULL  AND '1' = '1'))
+			and ((h.empCname like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1'))
+			or (a.TOPIC like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1')))
+			order by a.CREATED_DATE DESC
+		]]>
+	</sql-query>
+	
+	
+    <sql-query name="news.query.getBulletinBoardPagination">
+		<![CDATA[ 
+			select a.*,b.NAME NEWS_TYPE_NAME,h.empCname from 
+			[exdb].[dbo].[EX_TB_NEWS_MODEL_M] a
+			left join [exdb].[dbo].[EX_TB_NEWSTYPE_M] b on a.NEWS_TYPE = b.NEWSTYPE_ID
+			left join [eaidb].[dbo].[EI_TB_HREMP] h on h.EmpNo = a.CREATED_ID
+			left join [exdb].[dbo].[EX_TB_NEWSCATEGORY_M] c on b.NEWSTYPE_PARENT_ID = c.NEWSCATEGORY_ID
+			where 1=1 
+			and a.DELETE_FLAG <> '1'
+			and c.NEWSCATEGORY_ID = 2
+			and a.NEWS_M_ID in (
+				select NEWS_M_ID from EX_TB_NEWS_DEPT_MAPPING_M a
+                	where a.DEPT_CODE = (
+                		select SUBSTRING(DeptCode,0,3) from [eaidb].[dbo].[EI_TB_HREMP] 
+                        where EmpNo = :empNo
+            ))
+            and (a.NEWS_TYPE = COALESCE(NULL, :newsType ) or (:newsType  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE >= COALESCE(NULL, :startDate ) or (:startDate  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE <= COALESCE(NULL, :endDate ) or (:endDate  IS NULL  AND '1' = '1'))
+			and ((h.empCname like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1'))
+			or (a.TOPIC like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1')))
+			order by a.CREATED_DATE DESC
+		]]>
+	</sql-query>
+	
+    
+    <sql-query name="news.query.getNewsPagination">
+		<![CDATA[ 
+			select a.*,b.NAME NEWS_TYPE_NAME,h.empCname from 
+			[exdb].[dbo].[EX_TB_NEWS_MODEL_M] a
+			left join [exdb].[dbo].[EX_TB_NEWSTYPE_M] b on a.NEWS_TYPE = b.NEWSTYPE_ID
+			left join [eaidb].[dbo].[EI_TB_HREMP] h on h.EmpNo = a.CREATED_ID
+			left join [exdb].[dbo].[EX_TB_NEWSCATEGORY_M] c on b.NEWSTYPE_PARENT_ID = c.NEWSCATEGORY_ID
+			where 1=1 
+			and a.DELETE_FLAG <> '1'
+			and c.NEWSCATEGORY_ID = 1
+			and (a.NEWS_TYPE = COALESCE(NULL, :newsType ) or (:newsType  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE >= COALESCE(NULL, :startDate ) or (:startDate  IS NULL  AND '1' = '1'))
+			and (a.CREATED_DATE <= COALESCE(NULL, :endDate ) or (:endDate  IS NULL  AND '1' = '1'))
+			and ((h.empCname like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1'))
+			or (a.TOPIC like COALESCE(NULL,:authorName) OR (:authorName IS NULL AND '1' = '1')))
+			order by a.CREATED_DATE DESC
+		]]>
+	</sql-query>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <sql-query name="news.query.getNewsById">
+		<![CDATA[ 
+			select a.*,b.NAME NEWS_TYPE_NAME from 
+			[exdb].[dbo].[EX_TB_NEWS_MODEL_M] a
+			left join [exdb].[dbo].[EX_TB_NEWSTYPE_M] b on a.NEWS_TYPE = b.NEWSTYPE_ID
+			where a.NEWS_M_ID = :newsId
+		]]>
+	</sql-query>
+    
+    
+    
+    
+    
+    <sql-query name="news.query.getDeptListByDeptLevel">
+		<![CDATA[ 
+			select a.DeptCode,a.DeptCname,a.ParentDeptNo,a.DeptLevel
+			from [eaidb].[dbo].EI_TB_HRDEPT a
+			where a.DeptLevel = :deptLevel
+		]]>
+	</sql-query>
+	
+    <sql-query name="news.query.getNewsTypeList">
+		<![CDATA[ 
+			select * from [exdb].[dbo].[EX_TB_NEWSTYPE_M] a
+			where a.NEWSTYPE_PARENT_ID = :newsType_parent_id
+		]]>
+	</sql-query>
+    
+    <sql-query name="news.query.getNewsTypeIdByName">
+		<![CDATA[ 
+			select * from [exdb].[dbo].[EX_TB_NEWSTYPE_M] a
+			where a.Name = :newsTypeName
+		]]>
+	</sql-query>
+    
+   
+	
+    
+    
+</hibernate-mapping>
